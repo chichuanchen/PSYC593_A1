@@ -121,13 +121,20 @@ We begin by computing *crude birth rate* (CBR) for a given
   
 ### Answer 1
 
+```{r calc_total_py}
+# Create a function that computes py, where py = total person years for each 
+# population data. 
 
+compute_py <- function(population_data) {
+  population_data <- population_data %>%
+    mutate(py = py.men + py.women)
+  
+  return(population_data)
+}
 
-```{r create-PY}
-# Create new variable py = total person years for each data set
-world_data$py <- world_data$py.men + world_data$py.women
-kenya_data$py <- kenya_data$py.men + kenya_data$py.women
-sweden_data$py <- sweden_data$py.men + sweden_data$py.women
+world_data <- compute_py(world_data)
+kenya_data <- compute_py(kenya_data)
+sweden_data <- compute_py(sweden_data)
 ```
 
 
