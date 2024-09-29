@@ -162,11 +162,24 @@ compute_cbr <- function(population_data) {
 
 ```{r compute-CBR}
 # Compute the CBR for each data set
-worldcbr  <- compute_cbr(world_data)
-kenyacbr  <- compute_cbr(kenya_data)
-swedencbr <- compute_cbr(sweden_data)
+world_cbr  <- compute_cbr(world_data)
+kenya_cbr  <- compute_cbr(kenya_data)
+sweden_cbr <- compute_cbr(sweden_data)
 ```
 
+Create a tibble to showcase the CBR.
+```{r}
+cbr_tibble <- tibble(
+  Regions = c("World", "Kenya", "Sweden"),
+  CBR_1950_1955 = c(world_cbr[1], kenya_cbr[1], sweden_cbr[1]),
+  CBR_2005_2010 = c(world_cbr[2], kenya_cbr[2], sweden_cbr[2])
+)
+cbr_tibble
+```
+
+ World CBR went down from period 1950-1955 to 2005_2010, and same thing for both
+ Kenya and Sweden. For both time periods, Kenya had higher CBR than World,
+ while Sweden have lower CBR than world.
 
 
   
