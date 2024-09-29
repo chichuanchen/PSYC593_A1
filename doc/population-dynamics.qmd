@@ -76,7 +76,7 @@ kenya_data <- read_csv(file = file.path(data_path, "raw_data", "Kenya.csv"))
 sweden_data <- read_csv(file = file.path(data_path, "raw_data", "Sweden.csv"))
 ```
 
-```{r quick-data-check, echo = FALSE}
+```{r quick-data-check, echo = FALSE, include=FALSE}
 str(world_data)
 str(kenya_data)
 str(sweden_data)
