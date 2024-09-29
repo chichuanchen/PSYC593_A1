@@ -53,7 +53,7 @@ the variables in each data set.
 Source: United Nations, Department of Economic and Social Affairs, 
 Population Division (2013). *World Population Prospects: The 2012 Revision, DVD Edition.*
 
-```{r load-packages, echo=FALSE, message=FALSE}
+```{r load-packages, echo=FALSE, message=FALSE, warning=FALSE}
 # Load packages ----
 library(tidyverse)
 library(rprojroot)
@@ -422,12 +422,12 @@ sweden_data <- compute_pop_prop(sweden_data)
 ```{r}
 # Compute Kenyas CDR Kenya had Sweden's population distribution
 kenya_data %>%
-  mutate(temp_cdr = asdr * sweden_data$popP) %>%
+  mutate(temp_cdr = asdr * sweden_data$pop_proportion) %>%
   group_by(period) %>%
   summarise(cdrresweden = sum(temp_cdr))
 
 kenya_data %>%
-  mutate(temp_cdr = asdr * kenya_data$popP) %>%
+  mutate(temp_cdr = asdr * kenya_data$pop_proportion) %>%
   group_by(period) %>%
   summarise(cdrrekenya = sum(temp_cdr))
 ```
