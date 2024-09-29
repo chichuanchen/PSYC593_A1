@@ -56,14 +56,14 @@ Population Division (2013). *World Population Prospects: The 2012 Revision, DVD 
 ```{r load-packages, echo=FALSE, message=FALSE}
 # Load packages ----
 library(tidyverse)
-library(rprojroot) 
+library(rprojroot)
 library(here)
 library(styler)
 ```
 
 ```{r set-paths, echo = FALSE}
 ## Global variables ----
-root_path <- here::here()  
+root_path <- here::here()
 ### Path variables ----
 data_path <- file.path(root_path, "data")
 ```
@@ -71,8 +71,8 @@ data_path <- file.path(root_path, "data")
 
 ```{r load-data, message = FALSE}
 # Read provided data ----
-world_data  <- read_csv(file = file.path(data_path, "raw_data", "World.csv"))
-kenya_data  <- read_csv(file = file.path(data_path, "raw_data", "Kenya.csv"))
+world_data <- read_csv(file = file.path(data_path, "raw_data", "World.csv"))
+kenya_data <- read_csv(file = file.path(data_path, "raw_data", "Kenya.csv"))
 sweden_data <- read_csv(file = file.path(data_path, "raw_data", "Sweden.csv"))
 ```
 
@@ -122,13 +122,13 @@ We begin by computing *crude birth rate* (CBR) for a given
 ### Answer 1
 
 ```{r calc_total_py}
-# Create a function that computes py, where py = total person years for each 
-# population data. 
+# Create a function that computes py, where py = total person years for each
+# population data.
 
 compute_py <- function(population_data) {
   population_data <- population_data %>%
     mutate(py = py.men + py.women)
-  
+
   return(population_data)
 }
 
@@ -162,8 +162,8 @@ compute_cbr <- function(population_data) {
 
 ```{r compute-CBR}
 # Compute the CBR for each data set
-world_cbr  <- compute_cbr(world_data)
-kenya_cbr  <- compute_cbr(kenya_data)
+world_cbr <- compute_cbr(world_data)
+kenya_cbr <- compute_cbr(kenya_data)
 sweden_cbr <- compute_cbr(sweden_data)
 ```
 
@@ -221,8 +221,8 @@ compute_asfr <- function(population_data) {
 
 ```{r compute-asfr}
 # Compute ASFR for each data set
-world_data  <- compute_asfr(world_data)
-kenya_data  <- compute_asfr(kenya_data)
+world_data <- compute_asfr(world_data)
+kenya_data <- compute_asfr(kenya_data)
 sweden_data <- compute_asfr(sweden_data)
 ```
 
@@ -272,8 +272,8 @@ compute_tfr <- function(population_data) {
 
 ```{r compute-trf}
 # Compute the TFR for each data set
-(world_tfr  <- compute_tfr(world_data))
-(kenya_tfr  <- compute_tfr(kenya_data))
+(world_tfr <- compute_tfr(world_data))
+(kenya_tfr <- compute_tfr(kenya_data))
 (sweden_tfr <- compute_tfr(sweden_data))
 ```
 
@@ -283,7 +283,8 @@ total_birth_world <- world_data %>%
   group_by(period) %>%
   summarise(
     total_women = sum(py.women),
-    total_births = sum(births))
+    total_births = sum(births)
+  )
 
 
 # Compare how much these totals have changed
@@ -323,8 +324,8 @@ compute_cdr <- function(population_data) {
 
 ```{r compute-cdr}
 # Compute the CDR for each data set
-(world_cdr  <- compute_cdr(world_data))
-(kenya_cdr  <- compute_cdr(kenya_data))
+(world_cdr <- compute_cdr(world_data))
+(kenya_cdr <- compute_cdr(kenya_data))
 (sweden_cdr <- compute_cdr(sweden_data))
 ```
 Sweden has a sligtly lower CDR than the world average, while Kenya
@@ -363,8 +364,8 @@ compute_asdr <- function(population_data) {
 
 ```{r compute-asdr}
 # Compute ASDR for each data set
-world_data  <- compute_asdr(world_data)
-kenya_data  <- compute_asdr(kenya_data)
+world_data <- compute_asdr(world_data)
+kenya_data <- compute_asdr(kenya_data)
 sweden_data <- compute_asdr(sweden_data)
 
 world_data$asdr
