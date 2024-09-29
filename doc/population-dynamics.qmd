@@ -451,16 +451,16 @@ kenya_data <- compute_pop_prop(kenya_data)
 sweden_data <- compute_pop_prop(sweden_data)
 ```
 
-```{r}
+```{r cdr-hypothetical}
 # Compute Kenyas CDR Kenya had Sweden's population distribution
 kenya_data %>%
   mutate(temp_cdr = asdr * sweden_data$pop_proportion) %>%
   group_by(period) %>%
-  summarise(cdrresweden = sum(temp_cdr))
+  summarise(cdr_re_sweden = sum(temp_cdr))
 
 kenya_data %>%
   mutate(temp_cdr = asdr * kenya_data$pop_proportion) %>%
   group_by(period) %>%
-  summarise(cdrrekenya = sum(temp_cdr))
+  summarise(cdr_re_kenya = sum(temp_cdr))
 ```
 They are very similar.
