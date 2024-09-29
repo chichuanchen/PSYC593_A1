@@ -123,7 +123,8 @@ We begin by computing *crude birth rate* (CBR) for a given
 
 ```{r calc_total_py}
 # Create a function that computes py, where py = total person years for each
-# population data.
+# population data. Since py applies to all rows in our data,
+# we can append the tibble to include this variable.
 
 compute_py <- function(population_data) {
   population_data <- population_data %>%
@@ -168,7 +169,7 @@ sweden_cbr <- compute_cbr(sweden_data)
 ```
 
 Create a tibble to showcase the CBR.
-```{r}
+```{r CBR-tibble}
 cbr_tibble <- tibble(
   Regions = c("World", "Kenya", "Sweden"),
   CBR_1950_1955 = c(world_cbr[1], kenya_cbr[1], sweden_cbr[1]),
@@ -212,27 +213,42 @@ The CBR is easy to understand but contains both men and women
 ### Answer 2
 
 ```{r create-asfr-function}
-# Function to compute Age specific fertility rate (ASFR)
+# Function to compute Age specific fertility rate (ASFR), including only 
+# reproductive age range [15,50). Since this variable does not apply to all
+# rows in our tibble, we should not add it as a new column
+reproductive_age <- c("15-19", "20-24", "25-29",
+                      "30-34", "35-39", "40-44", "45-49")
+
 compute_asfr <- function(population_data) {
   population_data %>%
-    mutate(asfr = births / py.women)
+    filter(age %in% reproductive_age) %>%
+    group_by(period) %>%
+    summarise(asfr = sum(births) / sum(py.women)) %>%
+    pull()
 }
 ```
 
 ```{r compute-asfr}
 # Compute ASFR for each data set
-world_data <- compute_asfr(world_data)
-kenya_data <- compute_asfr(kenya_data)
-sweden_data <- compute_asfr(sweden_data)
+world_asfr <- compute_asfr(world_data)
+kenya_asfr <- compute_asfr(kenya_data)
+sweden_asfr <- compute_asfr(sweden_data)
 ```
 
 ```{r compare-asfr}
+# Create a tibble to showcase the asfr
 # Compare ASFRs for Kenya and Sweden
-mean(kenya_data$asfr)
-mean(sweden_data$asfr)
-t.test(kenya_data$asfr, sweden_data$asfr)
+asfr_tibble <- tibble(
+  regions = c("World", "Kenya", "Sweden"),
+  asfr_1950_1955 = c(world_asfr[1], kenya_asfr[1], sweden_asfr[1]),
+  asfr_2005_2010 = c(world_asfr[2], kenya_asfr[2], sweden_asfr[2])
+)
+asfr_tibble
 ```
-The data showed that, on average, women in Kenya had a higher age-specific fertility rate than women in Sweden.
+When comparing Kenya and Sweden, we can see that Kenya had higher fertility rates
+(among women of reproductive ages) in both time periods 1950-1955 and 2005-2010.
+In fact, Kenya had higher fertility rates than the world for both time periods, 
+while Sweden had lower than world fertility rates for both time periods.
 
 
 
@@ -259,43 +275,59 @@ Using the ASFR, we can define the TFR as the average number of
 
 ### Answer 3
 
-```{r create-tfr-function}
-# Function to compute the total fertility rate (TFR)
+```{r compute-tfr}
+# We already had a tibble of ASFR by time periods. We can now simply add new 
+# columns for TRF
 
-compute_tfr <- function(population_data) {
+tfr_tibble <- asfr_tibble %>%
+  transmute(
+    regions = regions,
+    tfr_1950_1955 = asfr_1950_1955 * 5,
+    tfr_2005_2010 = asfr_2005_2010 * 5
+  )
+trf_tibble
+```
+```{r create-py-sum-function}
+cal_py_sum <- function(population_data) {
   population_data %>%
     group_by(period) %>%
-    summarise(tfr = 5 * sum(asfr)) %>%
-    pull()
+    summarise(
+      py_women_sum = sum(py.women),
+      py_men_sum = sum(py.men),
+      py_sum = sum(py)
+    )
+}
+
+```
+
+```{r create-birth-sum-function}
+cal_birth_sum <- function(population_data) {
+  population_data %>%
+    group_by(period) %>%
+    summarise(
+      birth_sum = sum(births)
+    )
 }
 ```
 
-```{r compute-trf}
-# Compute the TFR for each data set
-(world_tfr <- compute_tfr(world_data))
-(kenya_tfr <- compute_tfr(kenya_data))
-(sweden_tfr <- compute_tfr(sweden_data))
+
+```{r calc-py-sum, warning=FALSE}
+(py_sum_world <- cal_py_sum(world_data))
+(py_sum_kenya <- cal_py_sum(kenya_data))
+(py_sum_sweden <- cal_py_sum(sweden_data))
+```
+```{r calc-birth-sum}
+(birth_sum_world <- cal_birth_sum(world_data))
+(birth_sum_kenya <- cal_birth_sum(kenya_data))
+(birth_sum_sweden <- cal_birth_sum(sweden_data))
+
 ```
 
-```{r compute-change}
-# Compute totals of women and births in the world by period
-total_birth_world <- world_data %>%
-  group_by(period) %>%
-  summarise(
-    total_women = sum(py.women),
-    total_births = sum(births)
-  )
+In general, the number of women increased from 1950s to 2000s. Interestingly,
+while the number of birth increased for world and Kenya, it stays pretty much the
+same for Sweden. Total fertility rates went down from the 1950s to 2000s for 
+everyone.
 
-
-# Compare how much these totals have changed
-(changes_totals <- total_birth_world[2, -1] / total_birth_world[1, -1])
-(change_women <- total_birth_world$total_women[total_birth_world$period == "2005-2010"] -
-  total_birth_world$total_women[total_birth_world$period == "1950-1955"])
-(change_births <- total_birth_world$total_births[total_birth_world$period == "2005-2010"] -
-  total_birth_world$total_births[total_birth_world$period == "1950-1955"])
-```
-
-In general, the number of women and the number of births both increased from the 1950s to the 2000s.
 
 ## Question 4
 
