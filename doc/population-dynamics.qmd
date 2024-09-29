@@ -356,12 +356,25 @@ compute_cdr <- function(population_data) {
 
 ```{r compute-cdr}
 # Compute the CDR for each data set
-(world_cdr <- compute_cdr(world_data))
-(kenya_cdr <- compute_cdr(kenya_data))
-(sweden_cdr <- compute_cdr(sweden_data))
+world_cdr <- compute_cdr(world_data)
+kenya_cdr <- compute_cdr(kenya_data)
+sweden_cdr <- compute_cdr(sweden_data)
 ```
-Sweden has a sligtly lower CDR than the world average, while Kenya
-has a slightly higher CDR than the world average.
+
+```{r cdr-tibble}
+cdr_tibble <- tibble(
+  Regions = c("World", "Kenya", "Sweden"),
+  CBR_1950_1955 = c(world_cdr[1], kenya_cdr[1], sweden_cdr[1]),
+  CBR_2005_2010 = c(world_cdr[2], kenya_cdr[2], sweden_cdr[2])
+)
+cdr_tibble
+```
+
+In general, death rate went down for everyone from the 1950s to the 2000s.
+When comparing regions, Kenya had a higher death rate than the world in the 1950s,
+while Sweden had a lower death rate than the world in the same time period.
+However, in time period 2005-2010, both Kenya and Sweden had higher death rates
+than the world.
 
 
 
@@ -387,24 +400,38 @@ One puzzling finding from the previous question is that the CDR
 
 
 ```{r create-asdr-function}
-# Function to compute Age specific death rate (ASDR)
+# Function to compute Age specific death rate (ASDR) for time period 2005-2010. 
+# Since data was already sorted by age groups, we do not need to group by age
 compute_asdr <- function(population_data) {
   population_data %>%
+    filter(period == "2005-2010") %>%
     mutate(asdr = deaths / py)
 }
 ```
 
 ```{r compute-asdr}
 # Compute ASDR for each data set
-world_data <- compute_asdr(world_data)
-kenya_data <- compute_asdr(kenya_data)
-sweden_data <- compute_asdr(sweden_data)
+world_asdr <- compute_asdr(world_data)
+kenya_asdr <- compute_asdr(kenya_data)
+sweden_asdr <- compute_asdr(sweden_data)
 
-world_data$asdr
-kenya_data$asdr
-sweden_data$asdr
+# To later visualize the data, we create a tibble that contains data from all 
+# regions
+all_asdr <- bind_rows(world_asdr, kenya_asdr, sweden_asdr)
+
 ```
-Overall, Sweden seems to have lower age-specific death rates than both the world's and Kenya.
+
+```{r visualize-asdr}
+all_asdr %>% 
+  ggplot() +
+  geom_line(aes(x=age, y=asdr, group=country, color=country)) +
+  labs(title = "ASDR for the period 2005-2010")
+
+```
+
+As we can see from the figure above, in the time period 2005-2010,
+Kenya has higher ASDR than both World and Sweden for all age groups. Sweden,
+on the other hand, had lower ASDRs than the world across all ages.
 
  
  
