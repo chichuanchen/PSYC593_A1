@@ -80,7 +80,30 @@ sweden_data <- read_csv(file = file.path(data_path, "raw_data", "Sweden.csv"))
 str(world_data)
 str(kenya_data)
 str(sweden_data)
+
+# A quick data check showed that the variables are not of the idea data type.
 ```
+
+```{r fix-data-type}
+fix_data_type <- function(population_data) {
+  population_data %>%
+    mutate(
+      country = factor(country),
+      period = factor(period),
+      age = factor(age, levels = c(
+        "0-4", "5-9", "10-14", "15-19",
+        "20-24", "25-29", "30-34", "35-39",
+        "40-44", "45-49", "50-54", "55-59",
+        "60-69", "70-79", "80+"
+      )) # I'd love to learn if there is a smarter way to reorder the factor levels
+    )
+}
+
+world_data <- fix_data_type(world_data)
+kenya_data <- fix_data_type(kenya_data)
+sweden_data <- fix_data_type(sweden_data)
+```
+
 
 <!-- The `read_csv` function from the package `readr` -->
 <!-- is part of the `tidyverse`. It will read the data into a -->
@@ -285,7 +308,7 @@ tfr_tibble <- asfr_tibble %>%
     tfr_1950_1955 = asfr_1950_1955 * 5,
     tfr_2005_2010 = asfr_2005_2010 * 5
   )
-trf_tibble
+tfr_tibble
 ```
 ```{r create-py-sum-function}
 cal_py_sum <- function(population_data) {
@@ -349,7 +372,7 @@ Next, we will examine another important demographic process:
 compute_cdr <- function(population_data) {
   population_data %>%
     group_by(period) %>%
-    summarise(cbr = sum(deaths) / sum(py)) %>%
+    summarise(cdr = sum(deaths) / sum(py)) %>%
     pull()
 }
 ```
@@ -364,8 +387,8 @@ sweden_cdr <- compute_cdr(sweden_data)
 ```{r cdr-tibble}
 cdr_tibble <- tibble(
   Regions = c("World", "Kenya", "Sweden"),
-  CBR_1950_1955 = c(world_cdr[1], kenya_cdr[1], sweden_cdr[1]),
-  CBR_2005_2010 = c(world_cdr[2], kenya_cdr[2], sweden_cdr[2])
+  CDR_1950_1955 = c(world_cdr[1], kenya_cdr[1], sweden_cdr[1]),
+  CDR_2005_2010 = c(world_cdr[2], kenya_cdr[2], sweden_cdr[2])
 )
 cdr_tibble
 ```
@@ -462,10 +485,10 @@ One way to understand the difference in the CDR between Kenya
 
 
 ```{r create-pop-prop-function}
-# Function to compute population proportion by period
+# Function to compute population proportion during period 2005-2010
 compute_pop_prop <- function(population_data) {
   population_data %>%
-    group_by(period) %>%
+    filter(period=="2005-2010") %>%
     mutate(pop_proportion = py / sum(py)) %>%
     ungroup()
 }
@@ -473,21 +496,35 @@ compute_pop_prop <- function(population_data) {
 
 ```{r compute-pop-prop}
 # Compute population proportion for each data set
-world_data <- compute_pop_prop(world_data)
-kenya_data <- compute_pop_prop(kenya_data)
-sweden_data <- compute_pop_prop(sweden_data)
+world_pop_prop <- compute_pop_prop(world_data)
+kenya_pop_prop <- compute_pop_prop(kenya_data)
+sweden_pop_prop <- compute_pop_prop(sweden_data)
 ```
+
+```{r visualize-pop-prop}
+# To visualize population proportion, first bind the data together
+all_pop_prop <- bind_rows(world_pop_prop, kenya_pop_prop, sweden_pop_prop)
+
+all_pop_prop %>% 
+  ggplot() +
+  geom_line(aes(x=age, y=pop_proportion, group=country, color=country)) +
+  labs(title = "Population proportion for the period 2005-2010")
+
+```
+
 
 ```{r cdr-hypothetical}
 # Compute Kenyas CDR Kenya had Sweden's population distribution
-kenya_data %>%
-  mutate(temp_cdr = asdr * sweden_data$pop_proportion) %>%
-  group_by(period) %>%
+kenya_asdr %>%
+  mutate(temp_cdr = asdr * sweden_pop_prop$pop_proportion) %>%
   summarise(cdr_re_sweden = sum(temp_cdr))
 
-kenya_data %>%
-  mutate(temp_cdr = asdr * kenya_data$pop_proportion) %>%
-  group_by(period) %>%
+# Using Kenya's own population distribution
+kenya_asdr %>%
+  mutate(temp_cdr = asdr * kenya_pop_prop$pop_proportion) %>%
   summarise(cdr_re_kenya = sum(temp_cdr))
 ```
-They are very similar.
+Using Sweden's population distribution, Kenya would have had a higher CDR. This is 
+because, as can be seen from the plot above, Sweden more older population. Since
+age-specific death rates are the highest in older population in Kenya, a higher
+ASDR times a higher rates of older population would result in higher CDR.
