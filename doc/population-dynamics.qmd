@@ -177,7 +177,7 @@ cbr_tibble <- tibble(
 cbr_tibble
 ```
 
- World CBR went down from period 1950-1955 to 2005_2010, and same thing for both
+ World CBR went down from period 1950-1955 to 2005-2010, and the same for both
  Kenya and Sweden. For both time periods, Kenya had higher CBR than World,
  while Sweden have lower CBR than world.
 
